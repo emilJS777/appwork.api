@@ -67,3 +67,27 @@ User.passwordHash = (password) => {
 User.passwordCompare = (password, passwordHash) => {
     return bcrypt.compareSync(password, passwordHash);
 }
+
+// *****************
+// caches
+User.cache = [];
+
+// add user in cache
+User.cacheAdd = (user) => {
+    for(let item of User.cache){
+        if(item._id === user._id)
+        return item;
+    }
+    User.cache.push(user)
+    return user;
+}
+
+// // find user in ceche
+User.cacheGetById = (id) => {
+    for(let item of User.cache){
+        if(id.toString() === item._id.toString())
+            return item;
+    }
+    return null;
+}
+

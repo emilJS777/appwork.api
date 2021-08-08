@@ -11,7 +11,7 @@ const auth = async (req, res, next) => {
     const decoded = tokenModel.verify(userToken)
 
     // token match
-    if(!decoded || decoded.type !== 'access' || !(await tokenModel.coincidence({AccessToken: userToken, UserId: decoded.id})))
+    if(!decoded || decoded.type !== 'access' || !tokenModel.cacheCoincidence({AccessToken: userToken, UserId: decoded.id}))
         return res.send(new ApiError(httpStatus.UNAUTHORIZED, 'unauthorized'))
     
     req.user = decoded.id;

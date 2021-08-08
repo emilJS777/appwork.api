@@ -4,7 +4,7 @@ const ApiResponse = require('../utils/ApiResponse')
 const httpStatus = require('http-status')
 
 const userGetById = async (userId, res) => {
-    const user = await userModel.getOne({_id: userId})
+    const user = userModel.cacheGetById(userId)
     if(!user) return res.send(new ApiError(httpStatus.UNAUTHORIZED, 'not correct user-id'))
     const {Email, EmailActive, FirstName, LastName, Wallet} = user;
     res.send(new ApiResponse({Email, EmailActive, FirstName, LastName, Wallet}))

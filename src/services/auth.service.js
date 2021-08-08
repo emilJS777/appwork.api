@@ -15,8 +15,11 @@ const loginAccount = async (email, password, res) => {
     // generate a pair of tokens 
     const access = tokenModel.sign({id: user._id, type: 'access'})
     const refresh = tokenModel.sign_refresh({id: user._id, type: 'refresh'})
-    const {AccessToken, RefreshToken} = await tokenModel.save(access, refresh, user._id)
-
+    // const token_model = await tokenModel.save(access, refresh, user._id)
+    // add token cache
+    const {AccessToken, RefreshToken} = tokenModel.cacheAdd(access, refresh, user._id)
+    // add user in cache
+    userModel.cacheAdd(user);
     // and bring them back 
     return res.send(new ApiResponse({AccessToken, RefreshToken}));
 }
@@ -42,14 +45,13 @@ const createAccount = async (email, password, firstName, lastName, res) => {
 const refreshPairTokens = async (refreshToken, res) => {
     // verify refresh token
     const decoded = tokenModel.verify(refreshToken)
-    if(!decoded || decoded.type !== 'refresh' || !(await tokenModel.coincidence({RefreshToken: refreshToken, UserId: decoded.id})))
+    if(!decoded || decoded.type !== 'refresh' || !tokenModel.cacheCoincidence({RefreshToken: refreshToken, UserId: decoded.id}))
         return res.send(new ApiError(httpStatus.BAD_REQUEST, 'no correct refresh token'))
-
     // generate a pair of tokens and get
     const access = tokenModel.sign({id: decoded.id, type: 'access'})
     const refresh = tokenModel.sign_refresh({id: decoded.id, type: 'refresh'})
     // save tokens and return result
-    const {AccessToken, RefreshToken} = await tokenModel.save(access, refresh, decoded.id)
+    const {AccessToken, RefreshToken} = tokenModel.cacheAdd(access, refresh, decoded.id)
     return res.send(new ApiResponse({AccessToken, RefreshToken}))
 }
 
